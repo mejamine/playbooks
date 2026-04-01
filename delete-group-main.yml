@@ -3,7 +3,6 @@
   become: true
   vars:
     delete_groupe_name: ""
-    delete_refactor_group_name: ""
 
   tasks:
 
