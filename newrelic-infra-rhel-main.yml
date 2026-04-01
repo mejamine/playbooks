@@ -14,7 +14,7 @@
 
     - name: Add New Relic repository
       get_url:
-        url: "https://download.newrelic.com/infrastructure_agent/linux/yum/el/{{ rhel_version }}/{{ rhel_arch }}/newrelic-infra.repo"
+        url: "https://download.newrelic.com/infrastructure_agent/linux/yum/el/{{ ansible_distribution_major_version }}/{{ ansible_facts['architecture'] }}/newrelic-infra.repo"
         dest: /etc/yum.repos.d/newrelic-infra.repo
         mode: '0644'
 
