@@ -4,15 +4,18 @@
 
   vars:
     # Convert comma-separated strings into clean lists
-    add_member_users: >-
-      {{ add_member_users.split(',') | map('trim') | reject('equalto','') | list
-         if add_member_users is string else add_member_users }}
-
-    add_member_groups: >-
-      {{ add_member_groups.split(',') | map('trim') | reject('equalto','') | list
-         if add_member_groups is string else add_member_groups }}
+    add_member_users: ""
+    add_member_groups: ""
 
   tasks:
+
+    - name: groups list
+      ansible.builtin.set_fact:
+        group_list: "{{ create_group_names.split(',') }}"
+
+    - name: users list
+      ansible.builtin.set_fact:
+        user_list: "{{ add_member_users.split(',') }}"
 
     - name: Get all system users
       ansible.builtin.getent:
@@ -26,11 +29,11 @@
 
     - name: Identify missing users
       set_fact:
-        missing_users: "{{ add_member_users | difference(all_users.ansible_facts.getent_passwd.keys() | list) }}"
+        missing_users: "{{ user_list | difference(all_users.ansible_facts.getent_passwd.keys() | list) }}"
 
     - name: Identify missing groups
       set_fact:
-        missing_groups: "{{ add_member_groups | difference(all_groups.ansible_facts.getent_group.keys() | list) }}"
+        missing_groups: "{{ group_list | difference(all_groups.ansible_facts.getent_group.keys() | list) }}"
 
     - name: Show missing users
       debug:
@@ -47,7 +50,7 @@
         name: "{{ item.0 }}"
         groups: "{{ item.1 }}"
         append: yes
-      loop: "{{ add_member_users | product(add_member_groups) | list }}"
+      loop: "{{ user_list | product(group_list) | list }}"
       when:
         - item.0 in all_users.ansible_facts.getent_passwd
         - item.1 in all_groups.ansible_facts.getent_group
