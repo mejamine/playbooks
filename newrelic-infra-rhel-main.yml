@@ -1,5 +1,5 @@
 - name: Install New Relic Infrastructure Agent (RHEL Family)
-  hosts: rhel
+  hosts: servers
   become: true
   vars:
     newrelic_license_key: ""
