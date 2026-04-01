@@ -11,7 +11,7 @@
 
     - name: groups list
       ansible.builtin.set_fact:
-        group_list: "{{ create_group_names.split(',') }}"
+        group_list: "{{ add_member_groups.split(',') }}"
 
     - name: users list
       ansible.builtin.set_fact:
