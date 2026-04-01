@@ -1,4 +1,4 @@
----
+
 - name: Install screen on Linux
   hosts: all
   become: true
@@ -10,6 +10,13 @@
         state: present
         update_cache: yes
       when: ansible_facts['os_family'] == "Debian"
+
+    - name: Enable CodeReady Builder repo on RHEL 10
+      command: subscription-manager repos --enable codeready-builder-for-rhel-10-x86_64-rpms
+      args:
+        warn: false
+      when:
+        - ansible_facts['os_family'] == "RedHat"
 
     - name: Install screen package on RHEL/CentOS/Fedora
       package:
