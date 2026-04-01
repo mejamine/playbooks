@@ -12,7 +12,7 @@
       when: ansible_facts['os_family'] == "Debian"
 
     - name: Install screen package on RHEL/CentOS/Fedora
-      yum:
+      package:
         name: screen
         state: present
       when: ansible_facts['os_family'] == "RedHat"
