@@ -20,7 +20,7 @@
 
     - name: Add New Relic repository
       apt_repository:
-        repo: "deb [arch={{ debian_arch }}] https://download.newrelic.com/infrastructure_agent/linux/apt {{ debian_release }} main"
+        repo: "deb [arch={{ nsible_facts['architecture'] }}] https://download.newrelic.com/infrastructure_agent/linux/apt {{ ansible_distribution_release }} main"
         state: present
 
     - name: Install libcap (required for privileged mode)
