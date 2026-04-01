@@ -1,0 +1,25 @@
+- name: Disable a user for 7 days
+  hosts: all
+  become: true
+
+  vars:
+    target_user: ""
+
+  tasks:
+
+    - name: Lock the user account
+      command: usermod -L {{ target_user }}
+
+    - name: Ensure at package is installed
+      package:
+        name: at
+        state: present
+
+    - name: Ensure atd service is running
+      service:
+        name: atd
+        state: started
+        enabled: true
+
+    - name: Schedule unlock in 7 days
+      shell: echo "usermod -U {{ target_user }}" | at now + 7 dyas

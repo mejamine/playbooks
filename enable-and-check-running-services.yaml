@@ -1,0 +1,20 @@
+---
+- name: Enable and check running services 
+  hosts: linux 
+
+
+  tasks:
+    - name: Ensure services are enabled
+      ansible.builtin.service:
+        name: "{{ item }}"
+        enabled: yes
+      loop: "{{ required_services }}"
+
+    - name: Gather service facts
+      ansible.builtin.service_facts:
+
+    - name: Check and display service status
+      ansible.builtin.debug:
+        msg: "Service {{ item }} is {{ ansible_facts.services[item + '.service'].state }}"
+      loop: "{{ required_services }}"
+      when: "item + '.service' in ansible_facts.services"

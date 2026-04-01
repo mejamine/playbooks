@@ -1,0 +1,77 @@
+---
+- name: Configure Multi-Type Banners (SSH, Console, MOTD, PAM)
+  hosts: all
+  become: true
+
+  vars:
+    ssh_banner_text: |
+          ****************************************************************************
+          * WARNING: Unauthorized access to this system is prohibited.               *
+          * All activities may be monitored and recorded.                            *
+          ****************************************************************************
+
+    motd_text: |
+          Welcome to  Server!
+          Hostname: {{ ansible_hostname }}
+          Uptime: {{ ansible_uptime_seconds | int // 3600 }} hours
+ 
+    sshd_banner_path: /etc/issue.net
+
+  tasks:
+
+    - name: Configure SSH pre-login banner file
+      copy:
+        dest: /etc/ssh/banner
+        content: "{{ ssh_banner_text }}"
+        owner: root
+        group: root
+        mode: '0644'
+
+    - name: Ensure SSHD config has Banner enabled
+      lineinfile:
+        path: /etc/ssh/sshd_config
+        regexp: '^Banner'
+        line: "Banner {{ sshd_banner_path }}"
+        state: present
+        backup: yes
+      
+    - name: Configure /etc/issue (local console banner)
+      copy:
+        dest: /etc/issue
+        content: "{{ ssh_banner_text }}"
+        owner: root
+        group: root
+        mode: '0644'
+
+    - name: Configure /etc/issue.net (remote banner)
+      copy:
+        dest: /etc/issue.net
+        content: "{{ ssh_banner_text }}"
+        owner: root
+        group: root
+        mode: '0644'
+
+    - name: Configure MOTD (post-login banner)
+      copy:
+        dest: /etc/motd
+        content: "{{ motd_text }}"
+        owner: root
+        group: root
+        mode: '0644'
+
+    - name: Restart SSH service (Debian family)
+      service:
+        name: ssh
+        state: restarted
+      when: ansible_os_family == "Debian"
+
+    - name: Restart SSH service (RedHat family)
+      service:
+        name: sshd
+        state: restarted
+      when: ansible_os_family == "RedHat"
+
+    
+
+
+    

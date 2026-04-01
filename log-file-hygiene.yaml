@@ -1,0 +1,24 @@
+---
+- name: Clean up old compressed logs
+  hosts: linux
+
+  tasks:
+    - name: Find compressed logs older than 30 days
+      ansible.builtin.find:
+        paths: "{{ log_file_path }}"
+        age: "{{ max_age }}"
+        recurse: yes
+        patterns: "*.gz,*.zip,*.tar.gz"
+      register: logs_to_delete
+
+    - name: Delete the identified files
+      ansible.builtin.file:
+        path: "{{ item.path }}"
+        state: absent
+      loop: "{{ logs_to_delete.files }}"
+      when: logs_to_delete.matched > 0
+
+    - name: Report deletion
+      ansible.builtin.debug:
+        msg: "Deleted {{ logs_to_delete.matched }} compressed log files."
+

@@ -1,0 +1,32 @@
+- name: Install and Configure sysstat
+  hosts: all
+  become: true
+
+  vars:
+    sysstat_config_file_debian: /etc/default/sysstat
+
+  tasks:
+
+    # Package Install
+    - name: Install sysstat package if not present
+      package:
+        name: sysstat
+        state: present
+
+    # Enable Service
+
+    - name: Configure sysstat (Debian family)
+      lineinfile:
+        path: "{{ sysstat_config_file_debian }}"
+        regexp: '^ENABLED='
+        line: 'ENABLED="true"'
+      when: ansible_os_family == "Debian"
+
+    - name: Enable and start sysstat service
+      systemd:
+        name: sysstat
+        enabled: true
+        state: started
+
+
+

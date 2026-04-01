@@ -1,0 +1,76 @@
+---
+- name: Configure Time Synchronization (Chrony )
+  hosts: all
+  become: true
+
+  vars:
+    ntp_servers:
+      - 0.pool.ntp.org
+      - 1.pool.ntp.org
+
+  tasks:
+
+  # Detect chrony is supported
+
+  - name: Set time service fact
+    set_fact:
+      chrony_supported: >-
+        {{ (ansible_distribution == "Fedora" and ansible_distribution_major_version | int >= 16)
+         or (ansible_os_family == "RedHat" and ansible_distribution_major_version | int >= 8)
+         or (ansible_os_family == "Debian" and ansible_distribution_major_version | int >= 10) }}
+
+  - name: Fail if ntp is not supported
+    fail:
+      msg: >
+        The 'chrony' service is not supported on
+        {{ ansible_distribution }} {{ ansible_distribution_version }}.
+        Please use ntp instead.
+    when: not chrony_supported 
+
+  # Install required package
+
+  - name: Install chrony
+    package:
+      name: chrony
+      state: present
+
+  # Configure chrony
+
+  - name: Configure chrony servers
+    blockinfile:
+      path:  "{{ '/etc/chrony/chrony.conf' if ansible_os_family == 'Debian' else '/etc/chrony.conf' }}"
+      marker: "# {mark} ANSIBLE MANAGED BLOCK"
+      block: |
+        {% for server in ntp_servers %}
+        server {{ server }} iburst
+        {% endfor %}
+    notify: restart time service
+
+  # Enable and start correct service
+
+  - name: Enable and start chrony
+    systemd:
+      name: "{{ 'chronyd' if ansible_os_family != 'Debian' else 'chrony' }}"
+      enabled: true
+      state: started
+
+  # Verify synchronization
+
+  - name: Check chrony sources
+    command: chronyc sources
+    register: chrony_status
+    changed_when: false
+
+
+  - name: Show chrony status
+    debug:
+      var: chrony_status.stdout_lines
+
+
+  # Handlers
+
+  handlers:
+    - name: restart time service
+      systemd:
+        name: "{{ 'chronyd' if ansible_os_family != 'Debian' else 'chrony' }}"
+        state: restarted

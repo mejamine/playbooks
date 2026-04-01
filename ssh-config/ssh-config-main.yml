@@ -1,0 +1,68 @@
+- name: SSH Hardening (Drop-in Override - RHEL & Debian)
+  hosts: all
+  become: true
+
+  vars:
+    ssh_port: 22
+    ssh_allow_users:
+      - amine
+      - admin
+    ssh_client_alive_interval: 300
+
+  tasks:
+
+    - name: Ensure sshd_config.d directory exists
+      file:
+        path: /etc/ssh/sshd_config.d
+        state: directory
+        mode: '0755'
+
+    - name: Verify Include directive exists
+      lineinfile:
+        path: /etc/ssh/sshd_config
+        regexp: '^Include /etc/ssh/sshd_config.d/\*\.conf'
+        line: 'Include /etc/ssh/sshd_config.d/*.conf'
+        state: present
+
+    - name: Deploy SSH hardening override file
+      template:
+        src: ssh_hardening.conf.j2
+        dest: /etc/ssh/sshd_config.d/99-hardening.conf
+        owner: root
+        group: root
+        mode: '0644'
+        validate: '/usr/sbin/sshd -t -f %s'
+      notify: Reload SSH
+
+    - name: Allow SSH port in firewalld (RHEL only)
+      firewalld:
+        port: "{{ ssh_port }}/tcp"
+        permanent: yes
+        state: enabled
+      when: ansible_os_family == "RedHat"
+
+    - name: Reload firewalld (RHEL only)
+      service:
+        name: firewalld
+        state: reloaded
+      when: ansible_os_family == "RedHat"
+
+    - name: Ensure custom SSH port is allowed in SELinux (RHEL/Fedora)
+      command: semanage port -a -t ssh_port_t -p tcp {{ ssh_port }}
+      args:
+        warn: false
+      become: true
+      when: ansible_os_family == "RedHat"
+      ignore_errors: true
+
+    - name: Verify SSH is listening on new port
+      wait_for:
+        port: "{{ ssh_port }}"
+        timeout: 10
+
+  handlers:
+
+    - name: Reload SSH
+      service:
+        name: "{{ 'sshd' if ansible_os_family == 'RedHat' else 'ssh' }}"
+        state: restarted

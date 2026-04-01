@@ -1,0 +1,68 @@
+
+- name: Get and Display All Login Banners
+  hosts: all
+  become: true
+
+  tasks:
+
+    - name: Get SSH banner path from sshd_config
+      shell: grep -i '^Banner' /etc/ssh/sshd_config | awk '{print $2}'
+      register: ssh_banner_path
+      changed_when: false
+      failed_when: false
+
+    - name: Set default banner path if not found
+      set_fact:
+        ssh_banner_file: "{{ ssh_banner_path.stdout | default('/etc/issue.net') }}"
+
+    - name: Read SSH banner file
+      command: cat "{{ ssh_banner_file }}"
+      register: ssh_banner_output
+      changed_when: false
+      failed_when: false
+
+    - name: Read /etc/issue
+      command: cat /etc/issue
+      register: issue_output
+      changed_when: false
+      failed_when: false
+
+    - name: Read /etc/issue.net
+      command: cat /etc/issue.net
+      register: issue_net_output
+      changed_when: false
+      failed_when: false
+
+    - name: Read MOTD
+      command: cat /etc/motd
+      register: motd_output
+      changed_when: false
+      failed_when: false
+
+    - name: Display detected SSH banner path
+      debug:
+        msg: "Detected SSH Banner file: {{ ssh_banner_file }}"
+
+    - name: Display SSH Banner
+      debug:
+        msg: |
+          ===== SSH Banner ({{ ssh_banner_file }}) =====
+          {{ ssh_banner_output.stdout }}
+
+    - name: Display /etc/issue
+      debug:
+        msg: |
+          ===== /etc/issue =====
+          {{ issue_output.stdout }}
+
+    - name: Display /etc/issue.net
+      debug:
+        msg: |
+          ===== /etc/issue.net =====
+          {{ issue_net_output.stdout }}
+
+    - name: Display MOTD
+      debug:
+        msg: |
+          ===== /etc/motd =====
+          {{ motd_output.stdout }}

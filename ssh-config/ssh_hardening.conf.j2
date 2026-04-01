@@ -1,0 +1,26 @@
+# SSH Hardening Override
+# Managed by Ansible
+
+Port {{ ssh_port }}
+
+# Disable root login
+PermitRootLogin no
+
+# Force SSH keys
+PasswordAuthentication no
+ChallengeResponseAuthentication no
+UsePAM yes
+
+# Allow specific users
+AllowUsers {% for user in ssh_allow_users %}{{ user }} {% endfor %}
+
+# Idle timeout
+ClientAliveInterval {{ ssh_client_alive_interval }}
+ClientAliveCountMax 0
+
+# Extra hardening
+MaxAuthTries 3
+LoginGraceTime 30
+X11Forwarding no
+AllowTcpForwarding no
+PermitEmptyPasswords no

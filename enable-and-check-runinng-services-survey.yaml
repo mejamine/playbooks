@@ -1,0 +1,26 @@
+---
+- name: Enable and check running services 
+  hosts: linux 
+  
+
+  tasks:
+    - name: Convert survey string to a clean list
+      ansible.builtin.set_fact:
+        service_list: "{{ required_services.split(',') | map('trim') | list }}"
+      when: required_services is defined and required_services != ""
+
+    - name: Ensure services are enabled
+      ansible.builtin.service:
+        name: "{{ item }}"
+        enabled: yes
+        state: started
+      loop: "{{ service_list }}"
+
+    - name: Gather service facts
+      ansible.builtin.service_facts:
+
+    - name: Check and display service status
+      ansible.builtin.debug:
+        msg: "Service {{ item }} is {{ ansible_facts.services[item + '.service'].state | default('not found') }}"
+      loop: "{{ service_list }}"
+      when: "item + '.service' in ansible_facts.services"

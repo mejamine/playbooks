@@ -1,0 +1,41 @@
+- name: Reassign ServiceDesk Plus Request
+  hosts: localhost
+  gather_facts: no
+
+  vars:
+    sdp_url: ""         # Base URL, e.g., https://servicedesk.company.com
+    portal: ""          # Portal path, e.g., helpdesk
+    api_key: ""         # Your API Key / OAuth token
+    request_id: ""      # Request ID to reassign
+    new_technician_email: ""  # Email of the technician to assign to
+
+  tasks:
+    - name: Reassign request to another technician
+      uri:
+        url: "{{ sdp_url }}/app/{{ portal }}/api/v3/requests/{{ request_id }}"
+        method: PUT
+        headers:
+          Accept: "application/vnd.manageengine.sdp.v3+json"
+          Authorization: "Zoho-oauthtoken {{ api_key }}"
+          Content-Type: "application/x-www-form-urlencoded"
+        body_format: form-urlencoded
+        body:
+          input_data: |
+            {
+              "request": {
+                "technician": {
+                  "email_id": "{{ new_technician_email }}"
+                }
+              }
+            }
+        return_content: yes
+      register: response
+
+    - name: Show API response
+      debug:
+        var: response.json
+
+    - name: Fail if reassignment failed
+      fail:
+        msg: "Failed to reassign request {{ request_id }}"
+      when: response.status != 200

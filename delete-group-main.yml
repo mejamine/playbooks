@@ -1,0 +1,34 @@
+- name: Delete Group
+  hosts: servers
+  become: true
+  vars:
+    delete_groupe_name: ""
+    delete_refactor_group_name: ""
+
+  tasks:
+
+    - name: Check if group exists
+      ansible.builtin.getent:
+        database: group
+        key: "{{ delete_groupe_name }}"
+      register: group_info
+      failed_when: group_info.failed
+
+    - name: Check if files are owned by the group
+      command: "find / -group {{ delete_groupe_name }} -print -quit"
+      register: fs_dependency
+      changed_when: false
+      failed_when: false
+
+    - name: Stop if filesystem dependency detected
+      fail:
+        msg: >
+          Cannot delete group '{{ delete_groupe_name }}'.
+          Files are still owned by this group.
+          You must migrate ownership first.
+      when: fs_dependency.stdout != ""
+
+    - name: Delete the group
+      group:
+        name: "{{ delete_groupe_name }}"
+        state: absent

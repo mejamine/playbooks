@@ -1,0 +1,35 @@
+- name: Update ServiceDesk Plus Request Status
+  hosts: localhost
+  gather_facts: no
+
+  vars:
+    sdp_url: ""         # Base URL, e.g., https://servicedesk.company.com
+    portal: ""          # Portal path, e.g., helpdesk
+    api_key: ""         # Your API Key / OAuth token
+    request_id: ""      # Request ID to reassign
+
+  tasks:
+    - name: Update request status
+      uri:
+        url: "{{ sdp_url }}/app/{{ portal }}/api/v3/requests/{{ request_id }}"
+        method: PUT
+        headers:
+          Accept: "application/vnd.manageengine.sdp.v3+json"
+          Authorization: "Zoho-oauthtoken {{ api_key }}"
+          Content-Type: "application/x-www-form-urlencoded"
+        body_format: form-urlencoded
+        body:
+          input_data: |
+            {
+              "request": {
+                "status": {
+                  "name": "Closed"
+                }
+              }
+            }
+        return_content: yes
+      register: response
+
+    - name: Show response
+      debug:
+        var: response.json
