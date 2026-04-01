@@ -2,7 +2,8 @@
   hosts: servers
   become: true
   vars:
-    users: ""
+    user_to_delete: ""
+    backup_dir: ""
 
   tasks: 
     
