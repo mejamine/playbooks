@@ -8,16 +8,11 @@
 
   tasks:
 
-  - name: Create /opt/splunkforwarder 
-    file:
-      path: /opt/splunkforwarder
-      state: directory
-      mode: '0755'
     
   - name: Download UF RPM
     get_url:
       url: "{{ splunk_uf_rpm_url }}"
-      dest: /opt/splunkforwarder/splunkforwarder.rpm
+      dest: /tmp/splunkforwarder.rpm
 
   - name: Set correct permissions on Splunk RPM
     file:
