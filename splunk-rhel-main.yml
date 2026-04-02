@@ -16,7 +16,7 @@
 
   - name: Set correct permissions on Splunk RPM
     file:
-      path: /opt/splunkforwarder/splunkforwarder.rpm
+      path: /tmp/splunkforwarder.rpm
       mode: '0644'
 
   - name: Install Splunk forwarder RPM
