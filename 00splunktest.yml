@@ -1,0 +1,33 @@
+- name: Install Splunk Universal Forwarder
+  hosts: all
+  become: true
+
+  vars:
+    splunk_uf_rpm_url: "https://download.splunk.com/products/universalforwarder/releases/10.2.0/linux/splunkforwarder-10.2.0-d749cb17ea65.x86_64.rpm"
+    splunk_home: "/opt/splunkforwarder"
+    splunk_pass: "ChangeMe123!"   # 🔒 use vault in real setup
+
+  tasks:
+
+    - name: Download UF RPM
+      get_url:
+        url: "{{ splunk_uf_rpm_url }}"
+        dest: /tmp/splunkforwarder.rpm
+        mode: '0644'
+
+    - name: Install Splunk forwarder RPM
+      yum:
+        name: /tmp/splunkforwarder.rpm
+        state: present
+        disable_gpg_check: yes
+
+    - name: Create deployment config file
+      copy:
+        dest: "{{ splunk_home }}/etc/system/local/deploymentclient.conf"
+        content: |
+          [target-broker:deploymentServer]
+          targetUri = 10.93.10.135:8089
+        mode: '0600'
+        force: no
+
+    
