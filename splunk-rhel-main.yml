@@ -4,19 +4,24 @@
   vars:
     
     splunk_uf_rpm_url: "https://download.splunk.com/products/universalforwarder/releases/10.2.0/linux/splunkforwarder-10.2.0-d749cb17ea65.x86_64.rpm"
-    splunk_pass: "Aa123*"
+    splunk_pass: ""
 
   tasks:
 
+  - name: Create /opt/splunkforwarder 
+    file:
+      path: /opt/splunkforwarder
+      state: directory
+      mode: '0755'
     
   - name: Download UF RPM
     get_url:
       url: "{{ splunk_uf_rpm_url }}"
-      dest: /tmp/splunkforwarder.rpm
+      dest: /opt/splunkforwarder/splunkforwarder.rpm
 
   - name: Set correct permissions on Splunk RPM
     file:
-      path: /tmp/splunkforwarder.rpm
+      path: /opt/splunkforwarder/splunkforwarder.rpm
       mode: '0644'
 
   - name: Install Splunk forwarder RPM
@@ -33,7 +38,6 @@
         USERNAME = admin
         PASSWORD = {{ splunk_pass }}
       mode: '0600'
-  
 
   - name: Create deployment config file
     copy:
@@ -49,6 +53,14 @@
     args:
       creates: /opt/splunkforwarder/var/run/splunkd.pid
 
+  - name: create log file for splunk
+    file:
+      path: /opt/splunkforwarder/var/log/splunk/splunkd.log
+      state: touch
+      mode: '0644'
+
+  - name: Restart Splunk Forwarder 
+    command: /opt/splunkforwarder/bin/splunk restart 
 
   - name: Copy credentials from playbook to target host
     copy:
