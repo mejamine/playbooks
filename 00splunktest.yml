@@ -5,8 +5,7 @@
   vars:
     splunk_uf_rpm_url: "https://download.splunk.com/products/universalforwarder/releases/10.2.0/linux/splunkforwarder-10.2.0-d749cb17ea65.x86_64.rpm"
     splunk_home: "/opt/splunkforwarder"
-    splunk_pass: "ChangeMe123!"   # 🔒 use vault in real setup
-
+    splunk_pass: "ChangeMe123!"  
   tasks:
 
     - name: Download UF RPM
@@ -54,21 +53,6 @@
       args:
         creates: "/etc/systemd/system/SplunkForwarder.service"
 
-    - name: Copy Splunk Cloud UF App
-      copy:
-        src: splunkclouduf.spl
-        dest: /tmp/splunkclouduf.spl
-        mode: '0644'
-
-    - name: Install Splunk Cloud UF App (idempotent)
-      command: >
-        {{ splunk_home }}/bin/splunk install app /tmp/splunkclouduf.spl
-        -auth admin:{{ splunk_pass }}
-      args:
-        creates: "{{ splunk_home }}/etc/apps/splunkclouduf"
-
-    - name: Restart Splunk only if app installed
-      command: "{{ splunk_home }}/bin/splunk restart"
-      when: not ansible_check_mode
+    
 
     

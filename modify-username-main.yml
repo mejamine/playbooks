@@ -12,3 +12,7 @@
     - name: Move home directory 
       ansible.builtin.command: >
         usermod -d /home/{{ new_username }} -m {{ new_username }}
+
+    - name: Rename the group
+      ansible.builtin.command:
+        cmd: groupmod -n {{ new_username }} {{ old_username }}
