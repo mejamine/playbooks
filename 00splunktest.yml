@@ -29,5 +29,46 @@
           targetUri = 10.93.10.135:8089
         mode: '0600'
         force: no
+    
+    - name: Create user-seed.conf (only if not exists)
+      copy:
+        dest: "{{ splunk_home }}/etc/system/local/user-seed.conf"
+        content: |
+          [user_info]
+          USERNAME = admin
+          PASSWORD = {{ splunk_pass }}
+        mode: '0600'
+        force: no
+
+    - name: Start Splunk and accept license (first run only)
+      command: >
+        {{ splunk_home }}/bin/splunk start
+        --accept-license
+        --answer-yes
+        --no-prompt
+      args:
+        creates: "{{ splunk_home }}/var/run/splunkd.pid"
+
+    - name: Enable Splunk at boot
+      command: "{{ splunk_home }}/bin/splunk enable boot-start"
+      args:
+        creates: "/etc/systemd/system/SplunkForwarder.service"
+
+    - name: Copy Splunk Cloud UF App
+      copy:
+        src: splunkclouduf.spl
+        dest: /tmp/splunkclouduf.spl
+        mode: '0644'
+
+    - name: Install Splunk Cloud UF App (idempotent)
+      command: >
+        {{ splunk_home }}/bin/splunk install app /tmp/splunkclouduf.spl
+        -auth admin:{{ splunk_pass }}
+      args:
+        creates: "{{ splunk_home }}/etc/apps/splunkclouduf"
+
+    - name: Restart Splunk only if app installed
+      command: "{{ splunk_home }}/bin/splunk restart"
+      when: not ansible_check_mode
 
     
