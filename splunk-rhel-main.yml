@@ -4,7 +4,7 @@
   vars:
     
     splunk_uf_rpm_url: "https://download.splunk.com/products/universalforwarder/releases/10.2.0/linux/splunkforwarder-10.2.0-d749cb17ea65.x86_64.rpm"
-    splunk_pass: ""
+    splunk_pass: "Aa123*"
 
   tasks:
 
