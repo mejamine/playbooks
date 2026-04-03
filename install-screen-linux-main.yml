@@ -3,21 +3,20 @@
   hosts: all
   become: true
 
+  vars:
+    package: ""
+
   tasks:
     - name: Install screen package on Debian/Ubuntu
       apt:
-        name: screen
+        name: "{{ package }}"
         state: present
         update_cache: yes
       when: ansible_facts['os_family'] == "Debian"
 
-    - name: Enable CodeReady Builder repo on RHEL 10
-      ansible.builtin.command: subscription-manager repos --enable codeready-builder-for-rhel-10-x86_64-rpms
-      when:
-        - ansible_facts['os_family'] == "RedHat"
 
     - name: Install screen package on RHEL/CentOS/Fedora
       package:
-        name: screen
+        name: '{{ package }}'
         state: present
       when: ansible_facts['os_family'] == "RedHat"
