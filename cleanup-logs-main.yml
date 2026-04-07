@@ -4,8 +4,10 @@
   become: true
 
   vars:
-    splunk_log_path: "/opt/splunkforwarder/var/log/splunk"   # Change to /opt/splunkforwarder/var/log/splunk for UF
-    log_retention_days: 7                             # Number of days to keep logs
+    splunk_log_path: "/opt/splunkforwarder/var/log/splunk"
+    log_retention_days: 7
+    log_extension: "log"        
+    exclude_log: "splunkd.log"
 
   tasks:
 
@@ -19,12 +21,20 @@
         msg: "Splunk log directory {{ splunk_log_path }} does not exist!"
       when: not log_dir.stat.exists
 
-    - name: Cleanup old Splunk logs
+    - name: Find old Splunk logs (filtered by extension)
       find:
         paths: "{{ splunk_log_path }}"
         age: "{{ log_retention_days }}d"
+        patterns: "*.{{ log_extension }}"
+        excludes: "{{ exclude_log }}"
         recurse: yes
       register: old_logs
+
+    - name: Show files to be deleted (debug)
+      debug:
+        msg: "{{ item.path }}"
+      loop: "{{ old_logs.files }}"
+      when: old_logs.matched > 0
 
     - name: Delete old Splunk log files
       file:
@@ -33,12 +43,11 @@
       loop: "{{ old_logs.files }}"
       when: old_logs.matched > 0
 
-
-    - name: create new log file for splunk
+    - name: Ensure splunkd.log exists
       file:
-        path: /opt/splunkforwarder/var/log/splunk/splunkd.log
+        path: "{{ splunk_log_path }}/splunkd.log"
         state: touch
         mode: '0644'
 
-    - name: Restart Splunk Forwarder 
-      command: /opt/splunkforwarder/bin/splunk restart 
+    - name: Restart Splunk Forwarder
+      command: /opt/splunkforwarder/bin/splunk restart

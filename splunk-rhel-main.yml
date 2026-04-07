@@ -50,5 +50,7 @@
 
     - name: Enable Splunk at boot
       command: "{{ splunk_home }}/bin/splunk enable boot-start"
+      environment:
+        LD_LIBRARY_PATH: ""
       args:
         creates: "/etc/systemd/system/SplunkForwarder.service"
