@@ -6,7 +6,7 @@
   vars:
     splunk_log_path: "/opt/splunkforwarder/var/log/splunk"
     log_retention_days: 7
-    log_extension: "log"        
+    log_extension: "dmp"        
     exclude_log: "splunkd.log"
 
   tasks:
@@ -24,7 +24,7 @@
     - name: Find old Splunk logs (filtered by extension)
       find:
         paths: "{{ splunk_log_path }}"
-        age: "{{ log_retention_days }}m"
+        age: "{{ log_retention_days }}d"
         patterns: "*.{{ log_extension }}"
         excludes: "{{ exclude_log }}"
         recurse: yes
@@ -43,11 +43,3 @@
       loop: "{{ old_logs.files }}"
       when: old_logs.matched > 0
 
-    - name: Ensure splunkd.log exists
-      file:
-        path: "{{ splunk_log_path }}/splunkd.log"
-        state: touch
-        mode: '0644'
-
-    - name: Restart Splunk Forwarder
-      command: /opt/splunkforwarder/bin/splunk restart
