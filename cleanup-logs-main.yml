@@ -24,7 +24,7 @@
     - name: Find old Splunk logs (filtered by extension)
       find:
         paths: "{{ splunk_log_path }}"
-        age: "{{ log_retention_days }}d"
+        age: "{{ log_retention_days }}m"
         patterns: "*.{{ log_extension }}"
         excludes: "{{ exclude_log }}"
         recurse: yes
