@@ -11,12 +11,12 @@
     - name: Download UF RPM
       get_url:
         url: "{{ splunk_uf_rpm_url }}"
-        dest: /tmp/splunkforwarder.rpm
+        dest: /opt/splunkforwarder.rpm
         mode: '0644'
 
     - name: Install Splunk forwarder RPM
       yum:
-        name: /tmp/splunkforwarder.rpm
+        name: /opt/splunkforwarder.rpm
         state: present
         disable_gpg_check: yes
 

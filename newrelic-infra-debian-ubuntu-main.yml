@@ -20,8 +20,12 @@
 
     - name: Add New Relic repository
       apt_repository:
-        repo: "deb [arch={{ ansible_facts['architecture'] }}] https://download.newrelic.com/infrastructure_agent/linux/apt {{ ansible_distribution_release }} main"
+        repo: "deb [arch=amd64] https://download.newrelic.com/infrastructure_agent/linux/apt {{ ansible_distribution_release }} main"
         state: present
+
+    - name: Update apt cache  
+      apt:
+        update_cache: yes
 
     - name: Install libcap (required for privileged mode)
       apt:
@@ -40,8 +44,8 @@
         name: newrelic-infra
         state: started
         enabled: true
-    
-    - name: Restart New Relic after installation to see the machine in the newrelic UI
+
+    - name: Restart New Relic
       systemd:
         name: newrelic-infra
         state: restarted

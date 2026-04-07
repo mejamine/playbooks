@@ -1,5 +1,5 @@
 
-- name: Install screen on Linux
+- name: Install package on Linux
   hosts: all
   become: true
 
@@ -7,7 +7,7 @@
     package: ""
 
   tasks:
-    - name: Install screen package on Debian/Ubuntu
+    - name: Install  package on Debian/Ubuntu
       apt:
         name: "{{ package }}"
         state: present
@@ -15,7 +15,7 @@
       when: ansible_facts['os_family'] == "Debian"
 
 
-    - name: Install screen package on RHEL/CentOS/Fedora
+    - name: Install  package on RHEL/CentOS/Fedora
       package:
         name: '{{ package }}'
         state: present
