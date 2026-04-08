@@ -5,7 +5,7 @@
 
   vars:
     splunk_log_path: "/opt/splunkforwarder/var/log/splunk"
-    log_retention_days: 7
+    log_retention_days: "7d"
     log_extension: "dmp"        
     exclude_log: "splunkd.log"
 
@@ -24,7 +24,7 @@
     - name: Find old Splunk logs (filtered by extension)
       find:
         paths: "{{ splunk_log_path }}"
-        age: "{{ log_retention_days }}d"
+        age: "{{ log_retention_days }}"
         patterns: "*.{{ log_extension }}"
         excludes: "{{ exclude_log }}"
         recurse: yes
